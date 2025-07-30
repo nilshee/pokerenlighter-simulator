@@ -365,8 +365,13 @@ public final class Simulator implements WorkerNotifiable
             
             worker = builder.build();
             
-            this.executor.execute(worker);
+            // Add to list first, before execution
             this.workers.add(worker);
+        }
+        
+        // Now start all workers after they're all in the list
+        for (SimulationWorker worker : this.workers) {
+            this.executor.execute(worker);
         }
         
         this.startTime = System.currentTimeMillis();
