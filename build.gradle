@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'org.javafling'
+version = '2.5'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+    }
+}
+
+application {
+    mainClass = 'org.javafling.pokerenlighter.main.PokerEnlighterSimulator'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'org.javafling.pokerenlighter.main.PokerEnlighterSimulator',
+            'Implementation-Title': 'Poker Enlighter Simulator',
+            'Implementation-Version': version,
+            'Implementation-Vendor': 'Radu Murzea'
+        )
+    }
+}
+
+// Task to compile the example
+task compileExample(type: JavaCompile) {
+    group = 'build'
+    description = 'Compile the example application'
+    source = file('use-example/Example.java')
+    destinationDirectory = file('use-example')
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// Task to run the example
+task runExample(type: JavaExec) {
+    group = 'application'
+    description = 'Run the example application'
+    dependsOn compileExample, classes
+    classpath = sourceSets.main.runtimeClasspath + files('use-example')
+    mainClass = 'Example'
+    workingDir = file('use-example')
+}
+
+// Task to create a fat JAR with all dependencies
+task fatJar(type: Jar) {
+    group = 'build'
+    description = 'Create a fat JAR with all dependencies'
+    archiveClassifier = 'all'
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+            'Main-Class': 'org.javafling.pokerenlighter.main.PokerEnlighterSimulator',
+            'Implementation-Title': 'Poker Enlighter Simulator',
+            'Implementation-Version': version,
+            'Implementation-Vendor': 'Radu Murzea'
+        )
+    }
+}
+
+test {
+    useJUnit()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
